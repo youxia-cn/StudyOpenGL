@@ -19,6 +19,10 @@ class Shader{
     private:
         GLuint program_id;
     public:
+        Shader(){
+            program_id = 0;
+        }
+        
         Shader(ShaderInfo* shaders){
             if(shaders == nullptr){
                 program_id = 0;
@@ -114,6 +118,18 @@ class Shader{
 
         void setProjectionMatrix(glm::mat4 projection_matrix){
             glUniformMatrix4fv(glGetUniformLocation(program_id, "projection_matrix"), 1, GL_FALSE, glm::value_ptr(projection_matrix));
+        }
+
+        void setVec3(const GLchar* name, glm::vec3 value){
+            glUniform3fv(glGetUniformLocation(program_id, name), 1, &value.x);
+        }
+
+        void setVec4(const GLchar* name, glm::vec3 value){
+            glUniform4fv(glGetUniformLocation(program_id, name), 1, &value.x);
+        }
+
+        void setFloat(const GLchar* name, GLfloat value){
+            glUniform1f(glGetUniformLocation(program_id, name), value);
         }
 };
 
