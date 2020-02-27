@@ -8,12 +8,13 @@ class App{
     private:
         const int SCR_WIDTH = 2000;
         const int SCR_HEIGHT = 1500;
-        float aspect;
-        double start_time;
-
         
     public:
-        static App* mainApp;
+        static App* the_app;
+        float aspect;
+        double time_start;
+        double time_now;
+        int frame_count;
         
         App(){
            aspect = (float)SCR_WIDTH/(float)SCR_HEIGHT;
@@ -25,6 +26,21 @@ class App{
         virtual void display(){
             
         }
+
+        void showFps(){
+            if(frame_count == 0){
+                time_start = glfwGetTime();
+                frame_count ++;
+            }else if(frame_count > 99){
+                frame_count = 0;
+                time_now = glfwGetTime();
+                float fps = 100.0f / (float)(time_now - time_start);
+                std::cout << "Fps: " << fps << std::endl;
+            }else{
+                frame_count ++;
+            }
+        }
+
         virtual void onWindowSize(GLFWwindow* window, int width, int height)
         {
             glViewport(0, 0, width, height);
@@ -61,12 +77,12 @@ class App{
 
         }
 
-        virtual void run(App* the_app){
-            if(mainApp != NULL){
-                std::cerr << "The mainApp is already run." << std::endl;
+        virtual void run(App* app){
+            if(the_app != NULL){ //同一时刻，只能有一个App运行
+                std::cerr << "The the_app is already run." << std::endl;
                 return;
             }
-            mainApp = the_app;
+            the_app = app;
             glfwInit();
             GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "StudyOpenGL", NULL, NULL);
             if (window == NULL)
@@ -102,30 +118,30 @@ class App{
         }
 
         static void glfw_onKey(GLFWwindow* window, int key, int scancode, int action, int mods){
-            mainApp->onKey(window, key, scancode, action, mods);
+            the_app->onKey(window, key, scancode, action, mods);
         }
 
         static void glfw_onWindowSize(GLFWwindow* window, int width, int height){
-            mainApp->onWindowSize(window, width, height);
+            the_app->onWindowSize(window, width, height);
         }
 
         static void glfw_onMouseButton(GLFWwindow* window, int button, int action, int mods)
         {
-            mainApp->onMouseButton(window, button, action, mods);
+            the_app->onMouseButton(window, button, action, mods);
         }
 
         static void glfw_onMouseMove(GLFWwindow* window, double x, double y)
         {
-            mainApp->onMouseMove(window, x, y);
+            the_app->onMouseMove(window, x, y);
         }
 
         static void glfw_onMouseWheel(GLFWwindow* window, double xoffset, double yoffset)
         {
-            mainApp->onMouseWheel(window, xoffset, yoffset);
+            the_app->onMouseWheel(window, xoffset, yoffset);
         }
 };
 
-App* App::mainApp = NULL;
+App* App::the_app = NULL;
 
 #define DECLARE_MAIN(a)                             \
 int main(int argc, const char ** argv)              \

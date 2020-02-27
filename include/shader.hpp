@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 struct ShaderInfo{
         GLenum type;
@@ -100,6 +102,18 @@ class Shader{
 
         void setCurrent(){
             glUseProgram(program_id);
+        }
+
+        void setModelMatrix(glm::mat4 model_matrix){
+            glUniformMatrix4fv(glGetUniformLocation(program_id, "model_matrix"), 1, GL_FALSE, glm::value_ptr(model_matrix));
+        }
+
+        void setViewMatrix(glm::mat4 view_matrix){
+            glUniformMatrix4fv(glGetUniformLocation(program_id, "view_matrix"), 1, GL_FALSE, glm::value_ptr(view_matrix));
+        }
+
+        void setProjectionMatrix(glm::mat4 projection_matrix){
+            glUniformMatrix4fv(glGetUniformLocation(program_id, "projection_matrix"), 1, GL_FALSE, glm::value_ptr(projection_matrix));
         }
 };
 

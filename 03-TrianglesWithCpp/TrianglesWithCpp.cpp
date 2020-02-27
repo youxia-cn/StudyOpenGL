@@ -4,7 +4,7 @@
 class MyApp : public App {
     private:
         GLuint VBO, VAO, EBO;
-        Shader *shader_default;
+        Shader *shader_triangles;
         const GLuint NumOfVertices = 4;
         const GLfloat clearColor[4] = {0.2f, 0.3f, 0.3f, 1.0f};
 
@@ -33,13 +33,13 @@ class MyApp : public App {
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
             ShaderInfo shaders[] = {
-                {GL_VERTEX_SHADER, "default.vert", 0},
-                {GL_FRAGMENT_SHADER, "default.frag", 0},
+                {GL_VERTEX_SHADER, "triangles.vert", 0},
+                {GL_FRAGMENT_SHADER, "triangles.frag", 0},
                 {GL_NONE, "", 0}
             };
 
-            shader_default = new Shader(shaders);
-            shader_default->setCurrent();
+            shader_triangles = new Shader(shaders);
+            shader_triangles->setCurrent();
 
             glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
             glEnableVertexAttribArray(0);
@@ -51,6 +51,12 @@ class MyApp : public App {
 
             glBindVertexArray(VAO);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        }
+
+        ~MyApp(){
+            if(shader_triangles != NULL){
+                delete shader_triangles;
+            }
         }
 
 };

@@ -32,8 +32,8 @@ void init(){
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     ShaderInfo shaders[] = {
-        {GL_VERTEX_SHADER, "default.vert", 0},
-        {GL_FRAGMENT_SHADER, "default.frag", 0},
+        {GL_VERTEX_SHADER, "triangles.vert", 0},
+        {GL_FRAGMENT_SHADER, "triangles.frag", 0},
         {GL_NONE, "", 0}
     };
 
