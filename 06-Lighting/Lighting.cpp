@@ -9,9 +9,10 @@ class MyApp : public App {
         const GLfloat clearColor[4] = {0.2f, 0.3f, 0.3f, 1.0f};
         Plane plane;
         Sphere light;
-        glm::vec4 lightPosition;
         Sphere sphere;
         Torus torus;
+        glm::vec4 lightPosition;
+        glm::vec4 cameraPosition;
 
     public:
         void init(){
@@ -85,11 +86,14 @@ class MyApp : public App {
             glm::mat4 light_model_matrix = glm::translate(I, glm::vec3(3.0f, 3.0f, 8.0f))
                                                 * glm::scale(I, glm::vec3(0.2f, 0.2f, 0.2f));
             lightPosition = view_matrix * glm::vec4(3.0f, 3.0f, 8.0f, 1.0f);
+            cameraPosition = view_matrix * glm::translate(I, glm::vec3(0.0f, 0.0f, 5.0f))
+                                        * glm::rotate(I, t/-3.0f, Y) * glm::vec4(0.0f);
             light.setMatrix(light_model_matrix, view_matrix, projection_matrix);
             light.render();
 
             plane.setMatrix(plane_model_matrix, view_matrix, projection_matrix);
             plane.setLightPosition(lightPosition);
+            plane.setCameraPosition(cameraPosition);
             plane.setLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
             plane.render();
 
@@ -97,6 +101,7 @@ class MyApp : public App {
                                                 * glm::scale(I, glm::vec3(0.8f, 0.8f, 0.8f));
             sphere.setMatrix(sphere_model_matrix, view_matrix, projection_matrix);
             sphere.setLightPosition(lightPosition);
+            plane.setCameraPosition(cameraPosition);
             sphere.setLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
             sphere.render();
 
@@ -105,13 +110,9 @@ class MyApp : public App {
                                                 * glm::scale(I, glm::vec3(1.3f, 1.3f, 1.3f));
             torus.setMatrix(torus_model_matrix, view_matrix, projection_matrix);
             torus.setLightPosition(lightPosition);
+            plane.setCameraPosition(cameraPosition);
             torus.setLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
             torus.render();
-
-            
-            
-
-            showFps();
         }
 
         ~MyApp(){

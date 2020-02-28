@@ -74,8 +74,6 @@ class MyApp : public App {
                                                 * glm::scale(I, glm::vec3(1.3f, 1.3f, 1.3f));
             torus.setMatrix(torus_model_matrix, view_matrix, projection_matrix);
             torus.render();
-
-            //showFps();
         }
 
         ~MyApp(){

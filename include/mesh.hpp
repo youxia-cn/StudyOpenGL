@@ -89,6 +89,11 @@ class Mesh{
             shader.setVec4("lightPosition", lightPosition);
         }
 
+        void setCameraPosition(glm::vec4 cameraPosition){
+            shader.setCurrent();
+            shader.setVec4("cameraPosition", cameraPosition);
+        }
+
         void setLightColor(glm::vec3 color){
             shader.setCurrent();
             shader.setVec3("lightColor", color);

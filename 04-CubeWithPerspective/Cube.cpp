@@ -84,7 +84,6 @@ class MyApp : public App {
             glEnable(GL_PRIMITIVE_RESTART);
             glPrimitiveRestartIndex(0xFFFF);
             glDrawElements(GL_TRIANGLE_STRIP, 17, GL_UNSIGNED_SHORT, NULL);
-            showFps();
         }
 
         ~MyApp(){

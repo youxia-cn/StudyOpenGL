@@ -12,8 +12,8 @@ class App{
     public:
         static App* the_app;
         float aspect;
-        double time_start;
-        double time_now;
+        double time_frame_start;
+        double time_frame_end;
         int frame_count;
         
         App(){
@@ -27,15 +27,11 @@ class App{
             
         }
 
-        void showFps(){
-            if(frame_count == 0){
-                time_start = glfwGetTime();
-                frame_count ++;
-            }else if(frame_count > 99){
+        void showFps(int frames){
+            //考虑到写入到标准输出是一个比较慢的操作，故每渲染frames帧之后才输出一次帧率
+            if(frame_count > frames){
                 frame_count = 0;
-                time_now = glfwGetTime();
-                float fps = 100.0f / (float)(time_now - time_start);
-                std::cout << "Fps: " << fps << std::endl;
+                std::cout << "fps: " << 1.0/(time_frame_end - time_frame_start) << std::endl;
             }else{
                 frame_count ++;
             }
@@ -107,8 +103,11 @@ class App{
 
             while (!glfwWindowShouldClose(window))
             {
-                display(); //这里才是渲染图形的主战场
+                time_frame_start = glfwGetTime();
+                display(); //这里才是渲染图形的主战场                
                 glfwSwapBuffers(window);
+                time_frame_end = glfwGetTime();
+                showFps(200);
                 glfwPollEvents();
             }
             glfwDestroyWindow(window);
