@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 class App{
     private:
         const int SCR_WIDTH = 2000;
@@ -15,9 +17,26 @@ class App{
         double time_frame_start;
         double time_frame_end;
         int frame_count;
+        glm::vec4 cameraPosition;
+        glm::vec3 cameraFront;
+        glm::vec3 cameraUp;
+        float cameraSpeed;
+        bool isShowFps;
+        bool firstMouse;
+        float yaw;
+        float pitch;
+        float lastX;
+        float lastY;
+
         
         App(){
-           aspect = (float)SCR_WIDTH/(float)SCR_HEIGHT;
+            aspect = (float)SCR_WIDTH/(float)SCR_HEIGHT;
+            cameraPosition = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+            cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+            yaw   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+            pitch =  0.0f;
+            firstMouse = true;
         }
 
         virtual void init(){
@@ -43,34 +62,104 @@ class App{
             aspect = (float)width/(float)height;
         }
 
+        
         virtual void onKey(GLFWwindow* window, int key, int scancode, int action, int mods)
         {
             if (action == GLFW_PRESS)
             {
                 switch (key)
                 {
-                    case GLFW_KEY_M:
+                    case GLFW_KEY_M: //切换线框模式和填充模式
                         {
                             static GLenum  mode = GL_FILL;
-
                             mode = ( mode == GL_FILL ? GL_LINE : GL_FILL );
                             glPolygonMode( GL_FRONT_AND_BACK, mode );
                         }
                         return;
+                    
+                    case GLFW_KEY_F: //切换是否显示帧率
+                        {
+                            isShowFps = ! isShowFps;
+                            return;
+                        }
+                    case GLFW_KEY_ESCAPE: //在鼠标被捕获后，可以用这个键关闭窗口
+                        {
+                            glfwSetWindowShouldClose(window, true);
+                            return;
+                        }
                 }
+            
             }
         }
 
-        virtual void onMouseButton(GLFWwindow* window, int button, int action, int mods){
-
+        virtual void processInput(GLFWwindow* window){
+            if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
+                cameraPosition += cameraSpeed * glm::vec4(cameraFront, 0.0f);
+            }
+            if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
+                cameraPosition -= cameraSpeed * glm::vec4(cameraFront, 0.0f);
+            }
+            if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
+                cameraPosition -= cameraSpeed * glm::vec4(glm::normalize(glm::cross(cameraFront, cameraUp)), 0.0f);
+            }
+            if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
+                cameraPosition += cameraSpeed * glm::vec4(glm::normalize(glm::cross(cameraFront, cameraUp)), 0.0f);
+            }
+            if(glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS){
+                pitch += 0.2f;
+                calcCameraFront();
+            }
+            if(glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS){
+                pitch -= 0.2f;
+                calcCameraFront();
+            }
+            if(glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS){
+                yaw -= 0.2f;
+                calcCameraFront();
+            }
+            if(glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS){
+                yaw += 0.2f;
+                calcCameraFront();
+            }
         }
 
         virtual void onMouseMove(GLFWwindow* window, double x, double y){
+            if (firstMouse)
+            {
+                lastX = x;
+                lastY = y;
+                firstMouse = false;
+            }
 
+            float xoffset = x - lastX;
+            float yoffset = lastY - y; // reversed since y-coordinates go from bottom to top
+            lastX = x;
+            lastY = y;
+
+            float sensitivity = 0.001f; // change this value to your liking
+            xoffset *= sensitivity;
+            yoffset *= sensitivity;
+
+            yaw += xoffset;
+            pitch += yoffset;
+
+            
+            calcCameraFront();
+            return;
         }
 
-        virtual void onMouseWheel(GLFWwindow* window, double xoffset, double yoffset){
+        void calcCameraFront(){
+            // make sure that when pitch is out of bounds, screen doesn't get flipped
+            if (pitch > 89.0f)
+                pitch = 89.0f;
+            if (pitch < -89.0f)
+                pitch = -89.0f;
 
+            glm::vec3 front;
+            front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+            front.y = sin(glm::radians(pitch));
+            front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+            cameraFront = glm::normalize(front);
         }
 
         virtual void run(App* app){
@@ -90,9 +179,8 @@ class App{
             glfwMakeContextCurrent(window);
             glfwSetKeyCallback(window, glfw_onKey);
             glfwSetWindowSizeCallback(window, glfw_onWindowSize);
-            glfwSetMouseButtonCallback(window, glfw_onMouseButton);
             glfwSetCursorPosCallback(window, glfw_onMouseMove);
-            glfwSetScrollCallback(window, glfw_onMouseWheel);
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
             if(glewInit() != GLEW_OK){
                 std::cerr << "Failed to initalize GLEW" << std::endl;
@@ -107,7 +195,11 @@ class App{
                 display(); //这里才是渲染图形的主战场                
                 glfwSwapBuffers(window);
                 time_frame_end = glfwGetTime();
-                showFps(200);
+                if(isShowFps){
+                    showFps(200);
+                }
+                cameraSpeed = (time_frame_end - time_frame_start) * 2.5f;
+                processInput(window);
                 glfwPollEvents();
             }
             glfwDestroyWindow(window);
@@ -124,19 +216,9 @@ class App{
             the_app->onWindowSize(window, width, height);
         }
 
-        static void glfw_onMouseButton(GLFWwindow* window, int button, int action, int mods)
-        {
-            the_app->onMouseButton(window, button, action, mods);
-        }
-
         static void glfw_onMouseMove(GLFWwindow* window, double x, double y)
         {
             the_app->onMouseMove(window, x, y);
-        }
-
-        static void glfw_onMouseWheel(GLFWwindow* window, double xoffset, double yoffset)
-        {
-            the_app->onMouseWheel(window, xoffset, yoffset);
         }
 };
 
