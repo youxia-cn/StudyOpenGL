@@ -88,6 +88,7 @@ class MyApp : public App {
             lightPosition = view_matrix * glm::vec4(3.0f, 3.0f, 8.0f, 1.0f);
             cameraPosition = view_matrix * glm::translate(I, glm::vec3(0.0f, 0.0f, 5.0f))
                                         * glm::rotate(I, t/-3.0f, Y) * glm::vec4(0.0f);
+            
             light.setMatrix(light_model_matrix, view_matrix, projection_matrix);
             light.render();
 
@@ -101,7 +102,7 @@ class MyApp : public App {
                                                 * glm::scale(I, glm::vec3(0.8f, 0.8f, 0.8f));
             sphere.setMatrix(sphere_model_matrix, view_matrix, projection_matrix);
             sphere.setLightPosition(lightPosition);
-            plane.setCameraPosition(cameraPosition);
+            sphere.setCameraPosition(cameraPosition);
             sphere.setLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
             sphere.render();
 
@@ -110,7 +111,7 @@ class MyApp : public App {
                                                 * glm::scale(I, glm::vec3(1.3f, 1.3f, 1.3f));
             torus.setMatrix(torus_model_matrix, view_matrix, projection_matrix);
             torus.setLightPosition(lightPosition);
-            plane.setCameraPosition(cameraPosition);
+            torus.setCameraPosition(cameraPosition);
             torus.setLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
             torus.render();
         }

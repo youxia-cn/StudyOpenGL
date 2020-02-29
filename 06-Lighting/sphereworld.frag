@@ -4,7 +4,7 @@ layout (location = 0) out vec4 color;
 
 in vec3 fNormal;
 in vec4 fPosition;
-in vec4 fColor;
+
 uniform vec3 Ka;
 uniform vec3 Kd;
 uniform vec3 Ks;
