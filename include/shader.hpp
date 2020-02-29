@@ -131,6 +131,10 @@ class Shader{
         void setFloat(const GLchar* name, GLfloat value){
             glUniform1f(glGetUniformLocation(program_id, name), value);
         }
+
+        void setInt(const GLchar* name, GLfloat value){
+            glUniform1i(glGetUniformLocation(program_id, name), value);
+        }
 };
 
 #endif
