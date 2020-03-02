@@ -30,9 +30,6 @@ class Mesh{
         Shader shader;
         
     public:
-        Mesh(){
-            
-        }
         void generateMesh(int iSlices);
         void setup(){
             glCreateVertexArrays(1, &VAO);
@@ -160,9 +157,14 @@ class Mesh{
             this->shader = shader;
         }
 
-        ~Mesh(){
-            
+        void setVertices(std::vector<Vertex> &&vertices){
+            this->vertices = vertices;
         }
+
+        void setIndices(std::vector<GLuint> &&indices){
+            this->indices = indices;
+        }
+
 };
 
 class Plane: public Mesh{
