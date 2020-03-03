@@ -31,9 +31,9 @@ void main(void)
     }else{
         specular = pow(specular, Ns);
     }
-    vec4 ambientLightColor = vec4(0.5f, 0.5f, 0.5f, 0.5f);
+    vec4 ambientLightColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     vec4 ambientColor = texture(mapKa, fTexCoord * texCoordScaleFactor) + vec4(Ka, 1.0f);
-    vec4 diffuseColor = texture(mapKd, fTexCoord * texCoordScaleFactor) + vec4(Kd, 1.0f);
+    vec4 diffuseColor = texture(mapKd, fTexCoord);
     vec4 specularColor = texture(mapKs, fTexCoord * texCoordScaleFactor) + vec4(Ks, 1.0f);
     color = min(vec4(1.0f), 
                 ambientColor * ambientLightColor

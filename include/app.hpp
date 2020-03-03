@@ -123,31 +123,6 @@ class App{
             }
         }
 
-        virtual void onMouseMove(GLFWwindow* window, double x, double y){
-            if (firstMouse)
-            {
-                lastX = x;
-                lastY = y;
-                firstMouse = false;
-            }
-
-            float xoffset = x - lastX;
-            float yoffset = lastY - y; // reversed since y-coordinates go from bottom to top
-            lastX = x;
-            lastY = y;
-
-            float sensitivity = 0.001f; // change this value to your liking
-            xoffset *= sensitivity;
-            yoffset *= sensitivity;
-
-            yaw += xoffset;
-            pitch += yoffset;
-
-            
-            calcCameraFront();
-            return;
-        }
-
         void calcCameraFront(){
             // make sure that when pitch is out of bounds, screen doesn't get flipped
             if (pitch > 89.0f)
@@ -179,8 +154,6 @@ class App{
             glfwMakeContextCurrent(window);
             glfwSetKeyCallback(window, glfw_onKey);
             glfwSetWindowSizeCallback(window, glfw_onWindowSize);
-            glfwSetCursorPosCallback(window, glfw_onMouseMove);
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
             if(glewInit() != GLEW_OK){
                 std::cerr << "Failed to initalize GLEW" << std::endl;
@@ -216,10 +189,6 @@ class App{
             the_app->onWindowSize(window, width, height);
         }
 
-        static void glfw_onMouseMove(GLFWwindow* window, double x, double y)
-        {
-            the_app->onMouseMove(window, x, y);
-        }
 };
 
 App* App::the_app = NULL;

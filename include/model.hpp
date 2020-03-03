@@ -71,6 +71,9 @@ class Model{
                     tempMesh.setKd(glm::vec3(tempColor.r, tempColor.g, tempColor.b));
                     aiGetMaterialColor(meterial, AI_MATKEY_COLOR_SPECULAR,&tempColor);
                     tempMesh.setKs(glm::vec3(tempColor.r, tempColor.g, tempColor.b));
+                    float Ns;
+                    aiGetMaterialFloat(meterial, AI_MATKEY_SHININESS, &Ns);
+                    tempMesh.setNs(Ns);
                 }
                 tempMesh.setup();
                 this->meshes.push_back(std::move(tempMesh));
@@ -97,6 +100,30 @@ class Model{
         void setMatrix(glm::mat4 model_matrix, glm::mat4 view_matrix, glm::mat4 projection_matrix){
             for(auto i= meshes.begin(); i!=meshes.end(); i++){
                 i->setMatrix(model_matrix, view_matrix, projection_matrix);
+            }
+        }
+
+        void setLightPosition(glm::vec4 lightPosition){
+            for(auto i= meshes.begin(); i!=meshes.end(); i++){
+                i->setLightPosition(lightPosition);
+            }
+        }
+
+        void setCameraPosition(glm::vec4 cameraPosition){
+            for(auto i= meshes.begin(); i!=meshes.end(); i++){
+                i->setCameraPosition(cameraPosition);
+            }
+        }
+
+        void setLightColor(glm::vec3 lightColor){
+            for(auto i= meshes.begin(); i!=meshes.end(); i++){
+                i->setLightColor(lightColor);
+            }
+        }
+
+        void setMapKd(std::string mapKd){
+            for(auto i= meshes.begin(); i!=meshes.end(); i++){
+                i->setMapKd(mapKd);
             }
         }
 };
