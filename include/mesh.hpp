@@ -128,14 +128,20 @@ class Mesh{
 
         void setMapKa(std::string filename){
                 mapKa = loadTexture(filename);
+                shader.setCurrent();
+                shader.setInt("hasMapKa", 1);
         }
 
         void setMapKd(std::string filename){
                 mapKd = loadTexture(filename);
+                shader.setCurrent();
+                shader.setInt("hasMapKd", 1);
         }
 
         void setMapKs(std::string filename){
                 mapKs = loadTexture(filename);
+                shader.setCurrent();
+                shader.setInt("hasMapKs", 1);
         }
 
         void setLightPosition(glm::vec4 lightPosition){
