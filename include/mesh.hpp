@@ -138,8 +138,20 @@ class Mesh{
                 shader.setInt("hasMapKd", 1);
         }
 
+        void setMapKd(GLuint mapKd){
+                this->mapKd = mapKd;
+                shader.setCurrent();
+                shader.setInt("hasMapKd", 1);
+        }
+
         void setMapKs(std::string filename){
                 mapKs = loadTexture(filename);
+                shader.setCurrent();
+                shader.setInt("hasMapKs", 1);
+        }
+
+        void setMapKs(GLuint mapKs){
+                this->mapKs = mapKs;
                 shader.setCurrent();
                 shader.setInt("hasMapKs", 1);
         }
