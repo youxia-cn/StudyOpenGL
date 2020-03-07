@@ -82,12 +82,13 @@ public:
             if (scene->HasMaterials())
             {
                 meterial = scene->mMaterials[mesh->mMaterialIndex];
-                aiColor4D tempColor;
-                aiGetMaterialColor(meterial, AI_MATKEY_COLOR_AMBIENT, &tempColor);
+                aiColor3D tempColor;
+                //aiGetMaterialColor(meterial, AI_MATKEY_COLOR_AMBIENT, &tempColor);
+                meterial->Get(AI_MATKEY_COLOR_AMBIENT, tempColor);
                 tempMesh.setKa(glm::vec3(tempColor.r, tempColor.g, tempColor.b));
-                aiGetMaterialColor(meterial, AI_MATKEY_COLOR_DIFFUSE, &tempColor);
+                meterial->Get(AI_MATKEY_COLOR_DIFFUSE, tempColor);
                 tempMesh.setKd(glm::vec3(tempColor.r, tempColor.g, tempColor.b));
-                aiGetMaterialColor(meterial, AI_MATKEY_COLOR_SPECULAR, &tempColor);
+                meterial->Get(AI_MATKEY_COLOR_SPECULAR, tempColor);
                 tempMesh.setKs(glm::vec3(tempColor.r, tempColor.g, tempColor.b));
                 float Ns;
                 aiGetMaterialFloat(meterial, AI_MATKEY_SHININESS, &Ns);
@@ -224,6 +225,15 @@ public:
             i->setLightColor(lightColor);
         }
     }
+
+    void setTexCoordScaleFactor(GLfloat factor)
+    {
+        for (auto i = meshes.begin(); i != meshes.end(); i++)
+        {
+            i->setTexCoordScaleFactor(factor);
+        }
+    }
+
 
     void setMapKd(std::string mapKd)
     {

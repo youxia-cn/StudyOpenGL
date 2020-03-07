@@ -18,9 +18,8 @@ class MyApp : public App {
                 {GL_NONE, ""}
             };
             model.setShader(Shader(shaders));
-            model.loaModel("media/nanosuit/", "nanosuit.obj");
+            model.loaModel("media/bugatti/", "bugatti.obj");
             model.setLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
-            //model.setMapKd("media/cottage/cottage_diffuse.png");
             
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
@@ -43,7 +42,7 @@ class MyApp : public App {
 
             glm::mat4 projection_matrix = glm::perspective(glm::radians(45.0f), aspect, 1.0f, 1000.0f);
 
-            glm::mat4 model_matrix = glm::scale(I, glm::vec3(0.5, 0.5, 0.5));
+            glm::mat4 model_matrix = glm::translate(I, glm::vec3(0.0f, -1.0f, -30.0f));
 
             model.setMatrix(model_matrix, view_matrix, projection_matrix);
             model.setLightPosition(view_matrix * lightPosition);
