@@ -50,15 +50,15 @@ class Mesh{
         void render(){
             glBindVertexArray(VAO);
             shader.setCurrent();
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, mapKa);
-            shader.setInt("mapKa", 0);
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, mapKd);
-            shader.setInt("mapKd", 1);
+            glBindTexture(GL_TEXTURE_2D, mapKa);
+            shader.setInt("mapKa", 1);
             glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, mapKd);
+            shader.setInt("mapKd", 2);
+            glActiveTexture(GL_TEXTURE3);
             glBindTexture(GL_TEXTURE_2D, mapKs);
-            shader.setInt("mapKs", 2);
+            shader.setInt("mapKs", 3);
             glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         }
 
@@ -100,6 +100,11 @@ class Mesh{
             shader.setModelMatrix(model_matrix);
             shader.setViewMatrix(view_matrix);
             shader.setProjectionMatrix(projection_matrix);
+        }
+
+        void setShadowMatrix(glm::mat4 shadow_matrix){
+            shader.setCurrent();
+            shader.setShadowMatrix(shadow_matrix);
         }
 
         void setKa(glm::vec3 Ka){

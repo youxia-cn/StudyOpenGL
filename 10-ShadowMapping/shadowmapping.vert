@@ -3,6 +3,7 @@
 uniform mat4 model_matrix;
 uniform mat4 projection_matrix;
 uniform mat4 view_matrix;
+uniform mat4 shadow_matrix;
 uniform vec3 Ka;
 uniform vec3 Kd;
 uniform vec3 Ks;
@@ -18,6 +19,9 @@ out vec4 fColor;
 out vec3 fNormal;
 out vec2 fTexCoord;
 out vec4 fPosition;
+out vec4 shadow_coord;
+out vec3 world_coord;
+out vec3 eye_coord;
 
 void main(void)
 {
@@ -26,4 +30,10 @@ void main(void)
     fPosition =  MV_matrix * vPosition;
     fNormal = normalize(transpose(inverse(mat3(MV_matrix))) * vNormal);
     fTexCoord = vTexCoord;
+    vec4 world_pos = model_matrix * vPosition;
+    vec4 eye_pos = view_matrix * world_pos;
+    vec4 clip_pos = projection_matrix * eye_pos;
+    world_coord = world_pos.xyz;
+    eye_coord = eye_pos.xyz;
+    shadow_coord = shadow_matrix * world_pos;
 }

@@ -184,6 +184,10 @@ public:
     void setShader(Shader shader)
     {
         this->shader = shader;
+        for (auto i = meshes.begin(); i != meshes.end(); i++)
+        {
+            i->setShader(shader);
+        }
     }
 
     void render()
@@ -199,6 +203,14 @@ public:
         for (auto i = meshes.begin(); i != meshes.end(); i++)
         {
             i->setMatrix(model_matrix, view_matrix, projection_matrix);
+        }
+    }
+
+    void setShadowMatrix(glm::mat4 shadow_matrix)
+    {
+        for (auto i = meshes.begin(); i != meshes.end(); i++)
+        {
+            i->setShadowMatrix(shadow_matrix);
         }
     }
 

@@ -120,6 +120,10 @@ class Shader{
             glUniformMatrix4fv(glGetUniformLocation(program_id, "projection_matrix"), 1, GL_FALSE, glm::value_ptr(projection_matrix));
         }
 
+        void setShadowMatrix(glm::mat4 shadow_matrix){
+            glUniformMatrix4fv(glGetUniformLocation(program_id, "shadow_matrix"), 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+        }
+
         void setVec3(const GLchar* name, glm::vec3 value){
             glUniform3fv(glGetUniformLocation(program_id, name), 1, &value.x);
         }

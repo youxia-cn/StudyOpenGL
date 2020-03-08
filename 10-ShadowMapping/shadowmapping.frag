@@ -6,6 +6,7 @@ in vec3 fNormal;
 in vec4 fPosition;
 in vec4 fColor;
 in vec2 fTexCoord;
+in vec4 shadow_coord;
 uniform vec3 Ka;
 uniform vec3 Kd;
 uniform vec3 Ks;
@@ -20,6 +21,7 @@ uniform int hasMapKd;
 uniform sampler2D mapKd;
 uniform int hasMapKs;
 uniform sampler2D mapKs;
+uniform sampler2DShadow depth_texture;
 
 void main(void)
 {
@@ -53,10 +55,19 @@ void main(void)
         specularColor = vec4(Ks, 1.0f);
     }
 
+    float f = textureProj(depth_texture, shadow_coord);
+    //textureProj()函数的功能约等于下面几行代码的功能。
+    
+    // float closetDepth = (texture(depth_texture, shadow_coord.xy/shadow_coord.w)).r;
+    // float currentDepth = shadow_coord.z/shadow_coord.w;
+    // float f = 0.0f;
+    // if(closetDepth > currentDepth){
+    //     f = 1.0f;
+    // }
+    
     color = min(vec4(1.0f), 
                 ambientColor * ambientLightColor
-                + diffuse * diffuseColor * vec4(lightColor, 1.0f) 
-                + specular * specularColor * vec4(lightColor, 1.0f)
+                + f * diffuse * diffuseColor * vec4(lightColor, 1.0f) 
+                + f * specular * specularColor * vec4(lightColor, 1.0f)
             );
-    
 }
