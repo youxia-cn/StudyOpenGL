@@ -27,9 +27,10 @@ class Mesh{
         //把数据传递到Shader需要的一些id
         GLuint VAO, VBO, EBO;
         //每一个Mesh对应一个Shader
-        Shader shader;
+        
         
     public:
+        Shader shader;
         void generateMesh(int iSlices);
         void setup(){
             glCreateVertexArrays(1, &VAO);
