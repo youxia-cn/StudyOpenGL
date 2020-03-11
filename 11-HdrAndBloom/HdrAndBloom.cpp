@@ -2,6 +2,7 @@
 #include "../include/shader.hpp"
 #include "../include/mesh.hpp"
 #include "../include/model.hpp"
+#include <cmath>
 
 class MyApp : public App
 {
@@ -17,10 +18,10 @@ private:
     glm::vec4 lightPosition02 = glm::vec4(-5.0f, 0.0f, 5.0f, 1.0f);
     glm::vec4 lightPosition03 = glm::vec4(5.0f, 0.0f, -5.0f, 1.0f);
     glm::vec4 lightPosition04 = glm::vec4(-5.0f, 0.0f, -5.0f, 1.0f);
-    glm::vec3 lightColor01 = glm::vec3(15.0f, 15.0f, 15.0f);
-    glm::vec3 lightColor02 = glm::vec3(3.0f, 0.0f, 0.0f);
-    glm::vec3 lightColor03 = glm::vec3(0.0f, 3.0f, 0.0f);
-    glm::vec3 lightColor04 = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 lightColor01 = glm::vec3(10.0f, 10.0f, 10.0f);
+    glm::vec3 lightColor02 = glm::vec3(10.0f, 0.0f, 0.0f);
+    glm::vec3 lightColor03 = glm::vec3(0.0f, 10.0f, 0.0f);
+    glm::vec3 lightColor04 = glm::vec3(0.0f, 0.0f, 10.0f);
     Sphere light01;
     Sphere light02;
     Sphere light03;
@@ -31,11 +32,13 @@ private:
     Shader sceneShader;
     GLuint hdrFBO;
     GLuint colorBuffers[2];
-    GLuint pingpongFBO[2];
-    GLuint pingpongBuffer[2];
-    Plane quad;
-    Plane quad2;
+    GLuint blurFBO[4];
+    GLuint blurBuffers[4];
+    GLuint blurDepthBuffers[4];
     GLuint depthBuffer;
+    Plane quad;
+    Plane blurQuad;
+    
 
 public:
     void init()
@@ -52,13 +55,14 @@ public:
             {GL_NONE, ""}};
 
         //用来进行高斯模糊的Shader文件
+        ShaderInfo blurShaders[] = {
+            {GL_VERTEX_SHADER, "bloom.vert"},
+            {GL_FRAGMENT_SHADER, "blur.frag"},
+            {GL_NONE, ""}};
+
         ShaderInfo bloomShaders[] = {
             {GL_VERTEX_SHADER, "bloom.vert"},
             {GL_FRAGMENT_SHADER, "bloom.frag"},
-            {GL_NONE, ""}};
-        ShaderInfo bloomShaders2[] = {
-            {GL_VERTEX_SHADER, "bloom.vert"},
-            {GL_FRAGMENT_SHADER, "bloom2.frag"},
             {GL_NONE, ""}};
 
         //光源
@@ -110,12 +114,12 @@ public:
         torus.setMapKd("media/texture02.jpg");
 
         //用来进行高斯模糊的四边形
+        blurQuad.setShader(Shader(blurShaders));
+        blurQuad.generateMesh(2);
+        blurQuad.setup();
         quad.setShader(Shader(bloomShaders));
         quad.generateMesh(2);
         quad.setup();
-        quad2.setShader(Shader(bloomShaders2));
-        quad2.generateMesh(2);
-        quad2.setup();
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -150,22 +154,24 @@ public:
         GLuint attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
         glDrawBuffers(2, attachments);
 
-        //创建用于高斯模糊的缓冲区
-        glGenFramebuffers(2, pingpongFBO);
-        glGenTextures(2, pingpongBuffer);
-        for (GLuint i = 0; i < 2; i++)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
-            glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
-            glTexImage2D(
-                GL_TEXTURE_2D, 0, GL_RGB16F, 2000, 1500, 0, GL_RGB, GL_FLOAT, NULL);
+        //创建用于高斯模糊的 Framebuffer 和 texture
+        glGenFramebuffers(4, blurFBO);
+        glGenTextures(4, blurBuffers);
+        for(int i=0; i<4; i++){
+            glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[i]);
+            glBindTexture(GL_TEXTURE_2D, blurBuffers[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 2000/std::pow(3, i+1), 1500/std::pow(3, i+1), 0, GL_RGB, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            glFramebufferTexture2D(
-                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, blurBuffers[i], 0);
+            glGenTextures(1, blurDepthBuffers);
+            glBindTexture(GL_TEXTURE_2D, blurDepthBuffers[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 2000/std::pow(3, i+1), 1500/std::pow(3, i+1), 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, blurDepthBuffers[i], 0);
         }
+
     }
 
     void display()
@@ -291,38 +297,81 @@ public:
         torus.render();
         //渲染到纹理完成
 
-        //下面开始高斯模糊
-        GLboolean horizontal = true, first_iteration = true;
-        GLuint amount = 10;
-        for (GLuint i = 0; i < amount; i++)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-            quad.shader.setInt("horizontal", horizontal);
-            glActiveTexture(GL_TEXTURE4);
-            glBindTexture(
-                GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
-            quad.shader.setInt("image", 4);
-            quad.render();
-            horizontal = !horizontal;
-            if (first_iteration)
-                first_iteration = false;
-        }
-        
-
-        //最后进行融合
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //下面开始高斯模糊，原谅我没有写成循环，主要是为了调试
+        //模糊第1层次
+        glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[0]);
+        glViewport(0, 0, 2000/3, 1500/3);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearBufferfv(GL_COLOR, 0, clearColor);
         glClearDepth(1.0f);
         glClear(GL_DEPTH_BUFFER_BIT);
+        blurQuad.shader.setCurrent();
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[1]);
+        blurQuad.shader.setInt("lastLevel", 5);
+        blurQuad.render();
+        //模糊第2层次
+        glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[1]);
+        glViewport(0, 0, 2000/9, 1500/9);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearBufferfv(GL_COLOR, 0, clearColor);
+        glClearDepth(1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        blurQuad.shader.setCurrent();
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[0]);
+        blurQuad.shader.setInt("lastLevel", 5);
+        blurQuad.render();
+        //模糊第3层次
+        glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[2]);
+        glViewport(0, 0, 2000/27, 1500/27);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearBufferfv(GL_COLOR, 0, clearColor);
+        glClearDepth(1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        blurQuad.shader.setCurrent();
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[1]);
+        blurQuad.shader.setInt("lastLevel", 5);
+        blurQuad.render();
+        //模糊第4层次
+        glBindFramebuffer(GL_FRAMEBUFFER, blurFBO[3]);
+        glViewport(0, 0, 2000/81, 1500/81);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearBufferfv(GL_COLOR, 0, clearColor);
+        glClearDepth(1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        blurQuad.shader.setCurrent();
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[2]);
+        blurQuad.shader.setInt("lastLevel", 5);
+        blurQuad.render();
+
+        //显示
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, 2000, 1500);
+        glClearBufferfv(GL_COLOR, 0, clearColor);
+        glClearDepth(1.0f);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        quad.shader.setCurrent();
         glActiveTexture(GL_TEXTURE5);
         glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
-        quad2.shader.setInt("scene", 5);
+        quad.shader.setInt("scene", 5);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, colorBuffers[1]);
-        quad2.shader.setInt("bloomBlur", 6);
-        quad2.render();
-
-        
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[0]);
+        quad.shader.setInt("brightness01", 6);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[1]);
+        quad.shader.setInt("brightness02", 7);
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[2]);
+        quad.shader.setInt("brightness03", 8);
+        glActiveTexture(GL_TEXTURE9);
+        glBindTexture(GL_TEXTURE_2D, blurBuffers[3]);
+        quad.shader.setInt("brightness04", 9);
+        quad.render();
+    
     }
 };
 
