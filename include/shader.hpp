@@ -103,7 +103,10 @@ class Shader{
             
         }
 
-
+        GLuint getId(){
+            return program_id;
+        }
+        
         void setCurrent(){
             glUseProgram(program_id);
         }
@@ -122,6 +125,10 @@ class Shader{
 
         void setShadowMatrix(glm::mat4 shadow_matrix){
             glUniformMatrix4fv(glGetUniformLocation(program_id, "shadow_matrix"), 1, GL_FALSE, glm::value_ptr(shadow_matrix));
+        }
+
+        void setVec2(const GLchar* name, glm::vec2 value){
+            glUniform2fv(glGetUniformLocation(program_id, name), 1, &value.x);
         }
 
         void setVec3(const GLchar* name, glm::vec3 value){

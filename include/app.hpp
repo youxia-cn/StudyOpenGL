@@ -8,7 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 class App{
     private:
-        const int SCR_WIDTH = 2000;
+        const int SCR_WIDTH = 1500;
         const int SCR_HEIGHT = 1500;
         
     public:
